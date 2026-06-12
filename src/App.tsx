@@ -96,7 +96,7 @@ export default function App() {
 
       {/* Step indicator */}
       <nav aria-label="Progress" className="mx-auto max-w-6xl px-6 pt-8">
-        <ol className="flex items-center gap-2 sm:gap-4">
+        <ol className="flex items-center justify-center gap-2 sm:gap-4">
           {STEPS.map((s, i) => (
             <li key={s.key} className="flex items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
@@ -141,8 +141,7 @@ export default function App() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-6 pb-10 text-sm text-gray-400">
-        Prototype for assessment purposes — not an official TTB system. AI-extracted data should always be verified by a
-        compliance agent before any approval decision.
+        Prototype for assessment purposes — not an official TTB system.
       </footer>
     </div>
   );

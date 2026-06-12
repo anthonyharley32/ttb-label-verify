@@ -67,7 +67,6 @@ export default function UploadStep({ onFile, busy, error }: Props) {
             </svg>
             <p className="text-2xl font-semibold text-gray-800">Upload Label Photo</p>
             <p className="mt-3 text-lg text-gray-500">Click here or drag a photo of the bottle label into this box</p>
-            <p className="mt-2 text-sm text-gray-400">JPG, PNG, or WebP — photos at an angle or with glare are OK</p>
           </>
         )}
         <input
