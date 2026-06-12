@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import UploadStep from "./components/UploadStep";
 import ReviewStep from "./components/ReviewStep";
 import ResultsStep from "./components/ResultsStep";
@@ -76,10 +76,9 @@ export default function App() {
   }
 
   // Step 2 can be taller than the viewport — jump back to the top on each
-  // transition so the new step starts in view. Instant (not smooth): the view
-  // is fully replaced, so there's no old content to scroll "through", and the
-  // fade-up animation on the incoming step provides the continuity.
-  useEffect(() => {
+  // transition so the new step starts in view. useLayoutEffect (not useEffect)
+  // so the scroll happens before paint — no flash frame at the old position.
+  useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [step]);
 

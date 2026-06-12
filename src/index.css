@@ -15,10 +15,13 @@ a,
 
 /* --- step-flow animations --- */
 
+/* Enter-only animation: the old step unmounts instantly, so the page
+   background shows through until opacity recovers — keep this SHORT or the
+   swap reads as a white flash rather than a transition. */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -26,7 +29,7 @@ a,
   }
 }
 .animate-fade-up {
-  animation: fade-up 0.35s ease-out both;
+  animation: fade-up 0.2s ease-out both;
 }
 
 /* circle pops when it flips to the completed state */
