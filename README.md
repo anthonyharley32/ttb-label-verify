@@ -2,7 +2,7 @@
 
 > An AI-powered prototype that helps TTB compliance agents verify alcohol beverage labels against COLA application data — built for the Department of the Treasury IT Specialist (AI) take-home assessment.
 
-**Live demo:** _[deployed URL here]_
+**Live demo:** https://ttb-label-verify-one.vercel.app
 
 ## How It Works
 
