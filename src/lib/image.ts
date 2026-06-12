@@ -1,4 +1,6 @@
-const MAX_DIMENSION = 1600;
+// 1280px keeps label text crisp for the vision model while minimizing image
+// tokens — fewer input tokens means faster extraction (hard < 5s requirement).
+const MAX_DIMENSION = 1280;
 
 export interface PreparedImage {
   base64: string;

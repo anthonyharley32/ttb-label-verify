@@ -13,7 +13,9 @@ Rules:
 - Transcribe text EXACTLY as printed — preserve original capitalization, punctuation, and wording. Never correct, normalize, or "fix" what the label says. If the label says "Government Warning" in title case, report it in title case.
 - The government warning field is legally sensitive: transcribe it verbatim, character for character.
 - If a field is not visible or not readable, return null for it and explain why in confidence_notes.
-- Labels may be photographed at angles, with glare, or in poor lighting — do your best and flag quality issues in confidence_notes.`;
+- Report a field ONLY if it is printed on the label. Never infer values — e.g. do not deduce country_of_origin from an address; if no country is printed, return null.
+- Labels may be photographed at angles, with glare, or in poor lighting — do your best and flag quality issues in confidence_notes.
+- Keep confidence_notes null unless there is a genuine readability problem; if there is one, describe it in under 15 words.`;
 
 const ALLOWED_MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 type AllowedMediaType = (typeof ALLOWED_MEDIA_TYPES)[number];
