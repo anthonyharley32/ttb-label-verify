@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { ExtractedLabelSchema } from "../lib/extraction-schema";
+import { ExtractedLabelSchema } from "../lib/extraction-schema.js";
 
 // Haiku 4.5 is the fastest Claude model — a single vision extraction returns in
 // ~2-3 seconds, which keeps us inside TTB's hard < 5 second usability requirement
