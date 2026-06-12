@@ -32,6 +32,18 @@ a,
   animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* exit phase of the fade-through: old step lifts and dissolves to the
+   background before the next step fades up */
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.animate-fade-out {
+  animation: fade-out 0.25s ease-in both;
+}
+
 /* circle pops when it flips to the completed state */
 @keyframes pop-in {
   0% {
@@ -64,6 +76,7 @@ a,
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
+  .animate-fade-out,
   .animate-pop,
   .animate-check {
     animation: none;

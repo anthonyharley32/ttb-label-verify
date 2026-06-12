@@ -52,6 +52,7 @@ function scrollToTopThen(swap: () => void) {
 
 export default function App() {
   const [step, setStep] = useState<Step>("upload");
+  const [leaving, setLeaving] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -86,17 +87,32 @@ export default function App() {
     }
   }
 
+  /** Full fade-through transition: scroll to top → fade old step out → swap → new step fades up. */
+  function transitionTo(swap: () => void) {
+    scrollToTopThen(() => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        swap();
+        return;
+      }
+      setLeaving(true);
+      window.setTimeout(() => {
+        swap();
+        setLeaving(false);
+      }, 250); // matches .animate-fade-out duration
+    });
+  }
+
   function handleVerify() {
     if (!extracted) return;
     const verdict = verify(extracted, application);
-    scrollToTopThen(() => {
+    transitionTo(() => {
       setResult(verdict);
       setStep("results");
     });
   }
 
   function handleRestart() {
-    scrollToTopThen(() => {
+    transitionTo(() => {
       setStep("upload");
       setExtracted(null);
       setResult(null);
@@ -176,8 +192,9 @@ export default function App() {
       </nav>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {/* key on step remounts the wrapper so the fade-up plays on every transition */}
-        <div key={step} className="animate-fade-up">
+        {/* key on step remounts the wrapper so the fade-up plays on every transition;
+            `leaving` plays the exit half of the fade-through first */}
+        <div key={step} className={leaving ? "animate-fade-out" : "animate-fade-up"}>
           {step === "upload" && <UploadStep onFile={handleFile} busy={busy} error={error} />}
           {step === "review" && extracted && (
             <ReviewStep
@@ -195,7 +212,7 @@ export default function App() {
               result={result}
               imageUrl={imageUrl}
               onRestart={handleRestart}
-              onEdit={() => scrollToTopThen(() => setStep("review"))}
+              onEdit={() => transitionTo(() => setStep("review"))}
             />
           )}
         </div>
