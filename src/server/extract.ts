@@ -154,7 +154,13 @@ async function extractWithGemini(image: string, mediaType: AllowedMediaType): Pr
     ],
   };
 
-  const generationConfig = { responseMimeType: "application/json", responseSchema: GEMINI_RESPONSE_SCHEMA };
+  const generationConfig = {
+    responseMimeType: "application/json",
+    responseSchema: GEMINI_RESPONSE_SCHEMA,
+    // Flash models think by default, adding 4-7s per request. Verbatim
+    // transcription doesn't need reasoning — disabling keeps us well under 5s.
+    thinkingConfig: { thinkingBudget: 0 },
+  };
 
   let res: Response;
   try {
