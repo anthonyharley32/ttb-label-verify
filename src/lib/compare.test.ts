@@ -51,6 +51,29 @@ describe("fuzzy text matching", () => {
     expect(result.fields.find((f) => f.field === "brand_name")!.status).toBe("close");
   });
 
+  it("matches an importer statement contained in the label's fuller name & address text (Heineken scenario)", () => {
+    const result = verify(
+      {
+        ...baseExtraction,
+        producer_name_address:
+          "BREWED AND BOTTLED BY HEINEKEN BROUWERIJEN B.V., AMSTERDAM, HOLLAND, IMPORTED BY HEINEKEN USA, WHITE PLAINS, NY",
+      },
+      { ...baseApplication, producer_name_address: "Heineken USA, White Plains, NY" },
+    );
+    const producer = result.fields.find((f) => f.field === "producer_name_address")!;
+    expect(producer.status).toBe("match");
+    expect(producer.note).toMatch(/within the label/i);
+  });
+
+  it("does not containment-match short strings on non-producer fields", () => {
+    const result = verify(
+      { ...baseExtraction, brand_name: "OLD TOM DISTILLERY RESERVE COLLECTION" },
+      { ...baseApplication, brand_name: "OLD TOM DISTILLERY" },
+    );
+    // Brand name uses strict fuzzy matching only — a partial brand is not a clean match
+    expect(result.fields.find((f) => f.field === "brand_name")!.status).not.toBe("match");
+  });
+
   it("flags genuinely different values as mismatch", () => {
     const result = verify({ ...baseExtraction, brand_name: "RIVER BEND VINEYARDS" }, baseApplication);
     expect(result.fields.find((f) => f.field === "brand_name")!.status).toBe("mismatch");

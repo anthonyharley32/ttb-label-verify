@@ -23,9 +23,9 @@ const FIELD_ORDER: (keyof ApplicationData)[] = [
 
 const PLACEHOLDERS: Record<keyof ApplicationData, string> = {
   brand_name: "e.g. Old Tom Distillery",
-  class_type: "e.g. Kentucky Straight Bourbon Whiskey",
-  alcohol_content: "e.g. 45%",
-  net_contents: "e.g. 750 mL",
+  class_type: "e.g. Premium Malt Lager",
+  alcohol_content: "e.g. 10%",
+  net_contents: "e.g. 12 fl. oz.",
   producer_name_address: "e.g. Old Tom Distillery, Louisville, KY",
   country_of_origin: "Leave blank for domestic products",
 };
@@ -39,7 +39,7 @@ export default function ReviewStep({ imageUrl, extracted, application, onChange,
           <h2 className="mb-3 text-xl font-semibold text-gray-800">Label Photo</h2>
           <img src={imageUrl} alt="Uploaded alcohol label" className="w-full rounded-xl border border-gray-200 shadow-sm" />
           {elapsedMs !== null && (
-            <p className="mt-2 text-sm text-gray-400">Read by AI in {(elapsedMs / 1000).toFixed(1)} seconds</p>
+            <p className="mt-2 text-sm text-gray-400">Analyzed in {(elapsedMs / 1000).toFixed(1)} seconds</p>
           )}
           {extracted.confidence_notes && (
             <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900" role="note">

@@ -14,6 +14,7 @@ Rules:
 - The government warning field is legally sensitive: transcribe it verbatim, character for character.
 - If a field is not visible or not readable, return null for it and explain why in confidence_notes.
 - Report a field ONLY if it is printed on the label. Never infer values — e.g. do not deduce country_of_origin from an address; if no country is printed, return null.
+- For producer_name_address: extract only the responsible-party statement(s) (e.g. "Brewed and bottled by X, City, Country" and/or "Imported by Y, City, State"). Exclude copyright notices, trademarks, and marketing text.
 - Labels may be photographed at angles, with glare, or in poor lighting — do your best and flag quality issues in confidence_notes.
 - Keep confidence_notes null unless there is a genuine readability problem; if there is one, describe it in under 15 words.`;
 

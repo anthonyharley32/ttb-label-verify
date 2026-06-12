@@ -72,7 +72,15 @@ export function parseVolumeMl(s: string): number | null {
 
 const FUZZY_THRESHOLD = 0.85;
 
-function compareText(labelValue: string | null, applicationValue: string): { status: MatchStatus; similarity?: number; note?: string } {
+// Containment matches need enough substance to be meaningful — guards against
+// a very short application value "matching" inside any longer label text.
+const MIN_CONTAINMENT_LENGTH = 10;
+
+function compareText(
+  labelValue: string | null,
+  applicationValue: string,
+  opts?: { containment?: boolean },
+): { status: MatchStatus; similarity?: number; note?: string } {
   if (!applicationValue.trim()) return { status: "not_provided" };
   if (!labelValue || !labelValue.trim()) return { status: "missing", note: "Not found on label" };
 
@@ -84,6 +92,12 @@ function compareText(labelValue: string | null, applicationValue: string): { sta
         ? "Case/formatting differs but text is identical"
         : undefined;
     return { status: "match", similarity: 1, note };
+  }
+  // Imported products carry both a producer and an importer statement on the
+  // label, while the application often lists just the responsible party — a
+  // contained match is a match, with a note so the agent sees the difference.
+  if (opts?.containment && b.length >= MIN_CONTAINMENT_LENGTH && a.includes(b)) {
+    return { status: "match", note: "Application text appears within the label's fuller statement" };
   }
   const sim = similarity(a, b);
   if (sim >= FUZZY_THRESHOLD) {
@@ -234,7 +248,7 @@ export function verify(extracted: ExtractedLabel, application: ApplicationData):
     { field: "class_type" as const, ...compareText(extracted.class_type, application.class_type) },
     { field: "alcohol_content" as const, ...compareAbv(extracted.alcohol_content, application.alcohol_content) },
     { field: "net_contents" as const, ...compareVolume(extracted.net_contents, application.net_contents) },
-    { field: "producer_name_address" as const, ...compareText(extracted.producer_name_address, application.producer_name_address) },
+    { field: "producer_name_address" as const, ...compareText(extracted.producer_name_address, application.producer_name_address, { containment: true }) },
     { field: "country_of_origin" as const, ...compareText(extracted.country_of_origin, application.country_of_origin) },
   ].map((f) => ({
     ...f,
