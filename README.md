@@ -7,7 +7,7 @@
 ## How It Works
 
 1. **Upload** a photo of an alcohol beverage label (drag-and-drop; angled/glary photos are OK)
-2. **AI reads the label** — Claude vision extracts all TTB-required elements in ~2–3 seconds
+2. **AI reads the label** — a vision model extracts all TTB-required elements in ~2–3 seconds
 3. **Enter the application data** from the COLA form
 4. **Review results** — field-by-field match/mismatch, plus a dedicated Government Health Warning compliance check with word-level diffing
 
@@ -19,14 +19,14 @@ No photo handy? Click **"Try it with a sample label"** in the app, or download t
 git clone https://github.com/anthonyharley32/ttb-label-verify.git
 cd ttb-label-verify
 npm install
-cp .env.example .env.local   # add your Anthropic API key
+cp .env.example .env.local   # add your Gemini (or Anthropic) API key
 npm run dev                  # http://localhost:5173
 ```
 
 Without an API key, the app still runs — the sample-label demo works fully; only live photo extraction requires the key.
 
 ```bash
-npm test                     # comparison-engine unit tests (20 tests)
+npm test                     # comparison-engine unit tests (22 tests)
 npm run build                # typecheck + production build
 ```
 
@@ -40,7 +40,7 @@ npm run build                # typecheck + production build
 | Comparison engine | Pure TypeScript (`src/lib/compare.ts`), unit-tested | Deterministic, explainable results — no AI in the verification step |
 | Hosting | Vercel (static SPA + `api/extract-label` function) | One-command deploys; the API key lives server-side only |
 
-The only server-side code is [`api/extract-label.ts`](api/extract-label.ts) → [`src/server/extract.ts`](src/server/extract.ts): it receives the image, calls Claude with a structured-output schema, and returns typed JSON. A Vite dev plugin serves the same handler locally, so `npm run dev` works end-to-end with no extra tooling.
+The only server-side code is [`api/extract-label.ts`](api/extract-label.ts) → [`src/server/extract.ts`](src/server/extract.ts): it receives the image, calls the vision model with a structured-output schema, and returns Zod-validated JSON. A Vite dev plugin serves the same handler locally, so `npm run dev` works end-to-end with no extra tooling.
 
 ### Why vision AI instead of traditional OCR
 
@@ -48,13 +48,15 @@ The previous scanning-vendor pilot failed on two fronts: 30–40 second processi
 
 ### Model choice — a measured tradeoff
 
-Stakeholders were explicit that anything slower than ~5 seconds risks adoption (the previous vendor's 30–40s pilot failed for exactly this). I benchmarked both directions on real bottle photos:
+Stakeholders were explicit that anything slower than ~5 seconds risks adoption (the previous vendor's 30–40s pilot failed for exactly this). I benchmarked three models across two providers on five real bottle photos (Smirnoff, Heineken, Michelob, Hennessy, White Claw — including a deliberately hard small-print case):
 
-| Model | Latency (measured) | Small-print fidelity |
+| Model | Latency (measured) | Small-print fidelity (measured) |
 |---|---|---|
-| `gemini-3.5-flash` (preferred when configured) | ~2–3s expected | Gemini line leads printed-text OCR benchmarks |
-| `claude-haiku-4-5` (Claude default) | ~3.5–4.5s ✅ | Garbled a tiny producer address ("NORWALK, CT" → "Norval, ON") |
-| `claude-sonnet-4-6` (via `EXTRACTION_MODEL`) | ~6.5s | Near-perfect verbatim transcription |
+| `gemini-3.5-flash` (default) | **~2.5–3s** ✅ | Verbatim on all five labels, including 10px producer text |
+| `claude-haiku-4-5` | ~3.5–4.5s ✅ | Garbled a tiny producer address ("NORWALK, CT" → "Norval, ON") |
+| `claude-sonnet-4-6` | ~6.5s | Near-perfect verbatim transcription |
+
+Two findings mattered: Gemini Flash "thinks" by default, adding 4–7s — disabling it (`thinkingBudget: 0`) costs nothing for verbatim transcription; and free-tier keys queue unpredictably (spikes to 20s), so the deployment uses a paid-tier key (~$0.001 per label).
 
 The extraction endpoint is provider-agnostic: it prefers Gemini when `GEMINI_API_KEY` is set and falls back to the Claude API otherwise, with the same prompt and the same Zod schema validating both. The model is swappable in one env var precisely because this speed/fidelity tradeoff is a product decision, not an architectural one.
 
@@ -69,7 +71,7 @@ The extraction endpoint is provider-agnostic: it prefers Gemini when `GEMINI_API
 ## Tools Used
 
 - React 19, Vite 7, TypeScript, Tailwind CSS v4
-- `@anthropic-ai/sdk` with Zod structured outputs (guaranteed-schema JSON from the vision call)
+- Gemini API (REST, structured output) and `@anthropic-ai/sdk` (Zod structured outputs) — one extraction schema validates both providers
 - Vitest for the comparison-engine test suite
 - `sharp` (dev-only) to generate the sample label images from SVG mockups
 
