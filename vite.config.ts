@@ -38,9 +38,10 @@ function devApiPlugin(): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  // Make ANTHROPIC_API_KEY from .env.local available to the dev API middleware
+  // Make API keys from .env.local available to the dev API middleware
   // (server-side only — never exposed to the client bundle).
   const env = loadEnv(mode, process.cwd(), "");
+  if (env.GEMINI_API_KEY) process.env.GEMINI_API_KEY = env.GEMINI_API_KEY;
   if (env.ANTHROPIC_API_KEY) process.env.ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY;
   if (env.EXTRACTION_MODEL) process.env.EXTRACTION_MODEL = env.EXTRACTION_MODEL;
 
