@@ -101,43 +101,60 @@ export default function App() {
             <li key={s.key} className="flex items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-base font-bold ${
+                  key={i < currentIndex ? "done" : "pending"}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-base font-bold transition-colors duration-300 ${
                     i < currentIndex
-                      ? "bg-green-600 text-white"
+                      ? "animate-pop bg-green-600 text-white"
                       : i === currentIndex
                         ? "bg-blue-700 text-white"
                         : "bg-gray-200 text-gray-500"
                   }`}
                   aria-current={i === currentIndex ? "step" : undefined}
                 >
-                  {i < currentIndex ? "✓" : i + 1}
+                  {i < currentIndex ? (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={3} aria-label="completed">
+                      <path className="animate-check" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    i + 1
+                  )}
                 </span>
-                <span className={`hidden text-base sm:inline ${i === currentIndex ? "font-semibold text-gray-900" : "text-gray-500"}`}>
+                <span
+                  className={`hidden text-base transition-colors duration-300 sm:inline ${i === currentIndex ? "font-semibold text-gray-900" : "text-gray-500"}`}
+                >
                   {s.label}
                 </span>
               </div>
-              {i < STEPS.length - 1 && <span className="h-px w-8 bg-gray-300 sm:w-16" aria-hidden />}
+              {i < STEPS.length - 1 && (
+                <span
+                  className={`h-px w-8 transition-colors duration-500 sm:w-16 ${i < currentIndex ? "bg-green-600" : "bg-gray-300"}`}
+                  aria-hidden
+                />
+              )}
             </li>
           ))}
         </ol>
       </nav>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {step === "upload" && <UploadStep onFile={handleFile} busy={busy} error={error} />}
-        {step === "review" && extracted && (
-          <ReviewStep
-            imageUrl={imageUrl}
-            extracted={extracted}
-            application={application}
-            onChange={setApplication}
-            onVerify={handleVerify}
-            onBack={handleRestart}
-            elapsedMs={elapsedMs}
-          />
-        )}
-        {step === "results" && result && (
-          <ResultsStep result={result} imageUrl={imageUrl} onRestart={handleRestart} onEdit={() => setStep("review")} />
-        )}
+        {/* key on step remounts the wrapper so the fade-up plays on every transition */}
+        <div key={step} className="animate-fade-up">
+          {step === "upload" && <UploadStep onFile={handleFile} busy={busy} error={error} />}
+          {step === "review" && extracted && (
+            <ReviewStep
+              imageUrl={imageUrl}
+              extracted={extracted}
+              application={application}
+              onChange={setApplication}
+              onVerify={handleVerify}
+              onBack={handleRestart}
+              elapsedMs={elapsedMs}
+            />
+          )}
+          {step === "results" && result && (
+            <ResultsStep result={result} imageUrl={imageUrl} onRestart={handleRestart} onEdit={() => setStep("review")} />
+          )}
+        </div>
       </main>
 
       <footer className="mx-auto max-w-6xl px-6 pb-10 text-sm text-gray-400">
