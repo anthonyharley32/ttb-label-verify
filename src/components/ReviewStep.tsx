@@ -96,6 +96,7 @@ export default function ReviewStep({ imageUrl, extracted, application, onChange,
               e.preventDefault();
               onVerify();
             }}
+            autoComplete="off"
             className="space-y-5"
           >
             {FIELD_ORDER.map((f) => {
