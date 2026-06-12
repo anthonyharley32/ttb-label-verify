@@ -11,7 +11,7 @@
 3. **Enter the application data** from the COLA form
 4. **Review results** — field-by-field match/mismatch, plus a dedicated Government Health Warning compliance check with word-level diffing
 
-No photo handy? Click **"Try it with a sample label"** in the app, or download the bundled test labels (including one with deliberate warning violations) from the upload screen.
+Need test images? Sample labels live in [`public/samples/`](public/samples) — a clean bourbon label, a wine label, and one with deliberate Government Warning violations (title-case header, swapped wording) to see the failure detection in action.
 
 ## Quick Start (Local)
 
@@ -23,7 +23,7 @@ cp .env.example .env.local   # add your Gemini (or Anthropic) API key
 npm run dev                  # http://localhost:5173
 ```
 
-Without an API key, the app still runs — the sample-label demo works fully; only live photo extraction requires the key.
+An API key is required for label extraction — without one, the API returns a clear configuration message rather than failing silently.
 
 ```bash
 npm test                     # comparison-engine unit tests (22 tests)

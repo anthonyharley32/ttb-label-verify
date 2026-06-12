@@ -3,12 +3,11 @@ import { useCallback, useRef, useState } from "react";
 
 interface Props {
   onFile: (file: File) => void;
-  onDemo: () => void;
   busy: boolean;
   error: string | null;
 }
 
-export default function UploadStep({ onFile, onDemo, busy, error }: Props) {
+export default function UploadStep({ onFile, busy, error }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -77,21 +76,6 @@ export default function UploadStep({ onFile, onDemo, busy, error }: Props) {
         </div>
       )}
 
-      <div className="mt-8 text-center">
-        <button
-          onClick={onDemo}
-          disabled={busy}
-          className="text-lg text-blue-700 underline underline-offset-4 hover:text-blue-900 disabled:opacity-50"
-        >
-          No photo handy? Try it with a sample label
-        </button>
-        <p className="mt-3 text-sm text-gray-400">
-          Sample test labels are also available to download:{" "}
-          <a href="/samples/bourbon-clean.png" className="underline" download>clean label</a>,{" "}
-          <a href="/samples/bourbon-warning-violation.png" className="underline" download>warning violation</a>,{" "}
-          <a href="/samples/wine-label.png" className="underline" download>wine label</a>
-        </p>
-      </div>
     </div>
   );
 }

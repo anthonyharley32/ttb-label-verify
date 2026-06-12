@@ -4,7 +4,6 @@ import ReviewStep from "./components/ReviewStep";
 import ResultsStep from "./components/ResultsStep";
 import { prepareImage } from "./lib/image";
 import { verify } from "./lib/compare";
-import { DEMO_APPLICATION, DEMO_EXTRACTION, DEMO_IMAGE_URL } from "./lib/demo";
 import type { ApplicationData, ExtractedLabel, VerificationResult } from "./lib/types";
 
 type Step = "upload" | "review" | "results";
@@ -60,15 +59,6 @@ export default function App() {
     }
   }
 
-  function handleDemo() {
-    setError(null);
-    setImageUrl(DEMO_IMAGE_URL);
-    setExtracted(DEMO_EXTRACTION);
-    setElapsedMs(null);
-    setApplication(DEMO_APPLICATION);
-    setStep("review");
-  }
-
   function handleVerify() {
     if (!extracted) return;
     setResult(verify(extracted, application));
@@ -93,7 +83,7 @@ export default function App() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-900">
-              U.S. Department of the Treasury · TTB · Prototype
+              U.S. Department of the Treasury · TTB
             </p>
             <h1 className="mt-1 text-2xl font-bold text-gray-900 sm:text-3xl">Label Verification Assistant</h1>
           </div>
@@ -133,7 +123,7 @@ export default function App() {
       </nav>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {step === "upload" && <UploadStep onFile={handleFile} onDemo={handleDemo} busy={busy} error={error} />}
+        {step === "upload" && <UploadStep onFile={handleFile} busy={busy} error={error} />}
         {step === "review" && extracted && (
           <ReviewStep
             imageUrl={imageUrl}
