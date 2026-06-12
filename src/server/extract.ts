@@ -11,7 +11,8 @@ const SYSTEM_PROMPT = `You are assisting TTB (Alcohol and Tobacco Tax and Trade 
 
 Rules:
 - Transcribe text EXACTLY as printed — preserve original capitalization, punctuation, and wording. Never correct, normalize, or "fix" what the label says. If the label says "Government Warning" in title case, report it in title case.
-- The government warning field is legally sensitive: transcribe it verbatim, character for character.
+- Use ONLY text visible in the image. Never use your knowledge of the brand to add or substitute information — e.g. do not name a parent company that isn't printed, and do not add a proof value that isn't shown. Wrong-but-printed beats correct-but-absent, always.
+- The government warning field is legally sensitive: transcribe it verbatim, character for character. full_text must be the COMPLETE statement starting from its first printed word — include the "GOVERNMENT WARNING:" header (in whatever case/form it appears) if it is printed. Join words split by line-break hyphenation back into whole words.
 - If a field is not visible or not readable, return null for it and explain why in confidence_notes.
 - Report a field ONLY if it is printed on the label. Never infer values — e.g. do not deduce country_of_origin from an address; if no country is printed, return null.
 - For producer_name_address: extract only the responsible-party statement(s) (e.g. "Brewed and bottled by X, City, Country" and/or "Imported by Y, City, State"). Exclude copyright notices, trademarks, and marketing text.
