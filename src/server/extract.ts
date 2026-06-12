@@ -4,12 +4,12 @@ import { ExtractedLabelSchema } from "../lib/extraction-schema.js";
 
 /**
  * Provider selection — measured on real bottle photos:
- *   gemini-3.5-flash    ~2-3s, excellent printed-text OCR  (preferred when GEMINI_API_KEY is set)
- *   claude-sonnet-4-6   ~6.5s, near-perfect transcription  (fallback)
- *   claude-haiku-4-5    ~3.5-4.5s, garbles very small print
+ *   gemini-3.5-flash    ~2-3s expected, excellent printed-text OCR  (preferred when GEMINI_API_KEY is set)
+ *   claude-haiku-4-5    ~3.5-4.5s, can garble very small print      (Claude fallback default)
+ *   claude-sonnet-4-6   ~6.5s, near-perfect transcription           (via EXTRACTION_MODEL)
  * Override the model per provider via EXTRACTION_MODEL.
  */
-const DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6";
+const DEFAULT_CLAUDE_MODEL = "claude-haiku-4-5";
 const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
 
 const SYSTEM_PROMPT = `You are assisting TTB (Alcohol and Tobacco Tax and Trade Bureau) compliance agents by extracting required label elements from photographs of alcohol beverage labels.

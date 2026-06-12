@@ -36,7 +36,7 @@ npm run build                # typecheck + production build
 |---|---|---|
 | Frontend | React 19 + Vite + TypeScript | Fast, simple SPA — no framework overhead for a 3-step tool |
 | Styling | Tailwind CSS v4 | Quick to build a clean, high-contrast, large-target UI |
-| AI extraction | Claude vision (`claude-sonnet-4-6`) via one serverless function | See "Why vision AI" and "Model choice" below |
+| AI extraction | Vision LLM (Gemini Flash or Claude) via one serverless function | See "Why vision AI" and "Model choice" below |
 | Comparison engine | Pure TypeScript (`src/lib/compare.ts`), unit-tested | Deterministic, explainable results — no AI in the verification step |
 | Hosting | Vercel (static SPA + `api/extract-label` function) | One-command deploys; the API key lives server-side only |
 
@@ -52,10 +52,11 @@ Stakeholders were explicit that anything slower than ~5 seconds risks adoption (
 
 | Model | Latency (measured) | Small-print fidelity |
 |---|---|---|
-| `claude-haiku-4-5` | ~3.5–4.5s ✅ | Garbled a tiny producer address ("NORWALK, CT" → "Norval, ON") |
-| `claude-sonnet-4-6` (default) | ~6.5s | Near-perfect verbatim transcription |
+| `gemini-3.5-flash` (preferred when configured) | ~2–3s expected | Gemini line leads printed-text OCR benchmarks |
+| `claude-haiku-4-5` (Claude default) | ~3.5–4.5s ✅ | Garbled a tiny producer address ("NORWALK, CT" → "Norval, ON") |
+| `claude-sonnet-4-6` (via `EXTRACTION_MODEL`) | ~6.5s | Near-perfect verbatim transcription |
 
-For a compliance tool, a confidently wrong transcription is worse than a ~1.5s overage, so the default favors fidelity; `EXTRACTION_MODEL` switches it in one env var. A production version could close the gap with newer fast-vision models, regional endpoints, or a fast-pass/verify-pass pipeline — the endpoint is a single isolated module precisely so the model is swappable.
+The extraction endpoint is provider-agnostic: it prefers Gemini when `GEMINI_API_KEY` is set and falls back to the Claude API otherwise, with the same prompt and the same Zod schema validating both. The model is swappable in one env var precisely because this speed/fidelity tradeoff is a product decision, not an architectural one.
 
 ### Deliberate design decisions
 
