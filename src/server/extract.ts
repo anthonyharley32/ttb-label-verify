@@ -104,28 +104,30 @@ async function extractWithClaude(image: string, mediaType: AllowedMediaType): Pr
   }
 }
 
-// JSON Schema mirror of ExtractedLabelSchema for Gemini's structured output.
-// (Kept literal rather than generated — it changes rarely and stays readable.)
+// OpenAPI-style mirror of ExtractedLabelSchema for Gemini's structured output
+// (Gemini's responseSchema uses `nullable: true`, not JSON-Schema type arrays).
+const nullableString = { type: "string", nullable: true };
+const nullableBoolean = { type: "boolean", nullable: true };
 const GEMINI_RESPONSE_SCHEMA = {
   type: "object",
   properties: {
-    brand_name: { type: ["string", "null"] },
-    class_type: { type: ["string", "null"] },
-    alcohol_content: { type: ["string", "null"] },
-    net_contents: { type: ["string", "null"] },
+    brand_name: nullableString,
+    class_type: nullableString,
+    alcohol_content: nullableString,
+    net_contents: nullableString,
     government_warning: {
       type: "object",
       properties: {
         present: { type: "boolean" },
-        full_text: { type: ["string", "null"] },
-        header_all_caps: { type: ["boolean", "null"] },
-        header_bold: { type: ["boolean", "null"] },
+        full_text: nullableString,
+        header_all_caps: nullableBoolean,
+        header_bold: nullableBoolean,
       },
       required: ["present", "full_text", "header_all_caps", "header_bold"],
     },
-    producer_name_address: { type: ["string", "null"] },
-    country_of_origin: { type: ["string", "null"] },
-    confidence_notes: { type: ["string", "null"] },
+    producer_name_address: nullableString,
+    country_of_origin: nullableString,
+    confidence_notes: nullableString,
   },
   required: [
     "brand_name",
@@ -152,53 +154,40 @@ async function extractWithGemini(image: string, mediaType: AllowedMediaType): Pr
     ],
   };
 
-  // Current docs use generationConfig.responseFormat; older deployments use
-  // responseMimeType + responseSchema. Try current first, fall back on a 400.
-  const configs = [
-    { responseFormat: { text: { mimeType: "application/json", schema: GEMINI_RESPONSE_SCHEMA } } },
-    { responseMimeType: "application/json", responseSchema: GEMINI_RESPONSE_SCHEMA },
-  ];
+  const generationConfig = { responseMimeType: "application/json", responseSchema: GEMINI_RESPONSE_SCHEMA };
 
-  let lastError: ExtractResult | null = null;
-  for (const generationConfig of configs) {
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY! },
-        body: JSON.stringify({ ...baseBody, generationConfig }),
-      });
-    } catch {
-      return { error: { status: 502, body: { error: "Could not reach the AI service. Please try again." } } };
-    }
-
-    if (res.status === 400) {
-      lastError = { status: 502, body: { error: "AI service rejected the request format." } };
-      continue; // try the alternate generationConfig shape
-    }
-    if (res.status === 401 || res.status === 403) {
-      return { error: { status: 503, body: { error: "AI service authentication failed — check the server API key." } } };
-    }
-    if (res.status === 429) {
-      return { error: { status: 429, body: { error: "AI service is rate-limited. Wait a moment and try again." } } };
-    }
-    if (!res.ok) {
-      return { error: { status: 502, body: { error: `AI service error (${res.status}). Please try again.` } } };
-    }
-
-    try {
-      const data = await res.json();
-      const text: string | undefined = data?.candidates?.[0]?.content?.parts
-        ?.map((p: { text?: string }) => p.text ?? "")
-        .join("");
-      const parsed = ExtractedLabelSchema.safeParse(JSON.parse(text || ""));
-      if (!parsed.success) {
-        return { error: { status: 502, body: { error: "The AI could not produce a structured extraction. Try a clearer photo." } } };
-      }
-      return { extracted: parsed.data };
-    } catch {
-      return { error: { status: 502, body: { error: "The AI returned an unreadable response. Please try again." } } };
-    }
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY! },
+      body: JSON.stringify({ ...baseBody, generationConfig }),
+    });
+  } catch {
+    return { error: { status: 502, body: { error: "Could not reach the AI service. Please try again." } } };
   }
-  return { error: lastError ?? { status: 502, body: { error: "AI service error. Please try again." } } };
+
+  if (res.status === 401 || res.status === 403) {
+    return { error: { status: 503, body: { error: "AI service authentication failed — check the server API key." } } };
+  }
+  if (res.status === 429) {
+    return { error: { status: 429, body: { error: "AI service is rate-limited. Wait a moment and try again." } } };
+  }
+  if (!res.ok) {
+    return { error: { status: 502, body: { error: `AI service error (${res.status}). Please try again.` } } };
+  }
+
+  try {
+    const data = await res.json();
+    const text: string | undefined = data?.candidates?.[0]?.content?.parts
+      ?.map((p: { text?: string }) => p.text ?? "")
+      .join("");
+    const parsed = ExtractedLabelSchema.safeParse(JSON.parse(text || ""));
+    if (!parsed.success) {
+      return { error: { status: 502, body: { error: "The AI could not produce a structured extraction. Try a clearer photo." } } };
+    }
+    return { extracted: parsed.data };
+  } catch {
+    return { error: { status: 502, body: { error: "The AI returned an unreadable response. Please try again." } } };
+  }
 }
