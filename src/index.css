@@ -15,13 +15,13 @@ a,
 
 /* --- step-flow animations --- */
 
-/* Enter-only animation: the old step unmounts instantly, so the page
-   background shows through until opacity recovers — keep this SHORT or the
-   swap reads as a white flash rather than a transition. */
+/* Step content enters AFTER the scroll-to-top completes (see scrollToTopThen
+   in App.tsx), so a slower, more deliberate fade is safe — the old content
+   stays on screen during the scroll, so there's no white gap to flash. */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -29,7 +29,7 @@ a,
   }
 }
 .animate-fade-up {
-  animation: fade-up 0.2s ease-out both;
+  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* circle pops when it flips to the completed state */
@@ -37,7 +37,7 @@ a,
   0% {
     transform: scale(0.5);
   }
-  70% {
+  65% {
     transform: scale(1.12);
   }
   100% {
@@ -45,10 +45,10 @@ a,
   }
 }
 .animate-pop {
-  animation: pop-in 0.35s ease-out both;
+  animation: pop-in 0.45s ease-out both;
 }
 
-/* checkmark draws itself left-to-right */
+/* checkmark draws itself left-to-right, after the pop lands */
 @keyframes check-draw {
   from {
     stroke-dashoffset: 24;
@@ -59,7 +59,7 @@ a,
 }
 .animate-check {
   stroke-dasharray: 24;
-  animation: check-draw 0.4s ease-out 0.15s both;
+  animation: check-draw 0.5s ease-out 0.3s both;
 }
 
 @media (prefers-reduced-motion: reduce) {

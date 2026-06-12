@@ -23,6 +23,33 @@ const STEPS: { key: Step; label: string }[] = [
   { key: "results", label: "Verification Results" },
 ];
 
+/**
+ * Choreographed step transition: smooth-scroll to the top first (old content
+ * stays visible — no blank background), then run the swap. Falls through
+ * instantly when already at the top or when the user prefers reduced motion.
+ */
+function scrollToTopThen(swap: () => void) {
+  if (window.scrollY <= 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.scrollTo(0, 0);
+    swap();
+    return;
+  }
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    clearInterval(poll);
+    clearTimeout(safety);
+    swap();
+  };
+  // No reliable cross-browser scrollend event — poll, with a hard ceiling.
+  const poll = setInterval(() => {
+    if (window.scrollY <= 0) finish();
+  }, 80);
+  const safety = setTimeout(finish, 1200);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 export default function App() {
   const [step, setStep] = useState<Step>("upload");
   const [busy, setBusy] = useState(false);
@@ -61,18 +88,23 @@ export default function App() {
 
   function handleVerify() {
     if (!extracted) return;
-    setResult(verify(extracted, application));
-    setStep("results");
+    const verdict = verify(extracted, application);
+    scrollToTopThen(() => {
+      setResult(verdict);
+      setStep("results");
+    });
   }
 
   function handleRestart() {
-    setStep("upload");
-    setExtracted(null);
-    setResult(null);
-    setApplication(EMPTY_APPLICATION);
-    setImageUrl("");
-    setElapsedMs(null);
-    setError(null);
+    scrollToTopThen(() => {
+      setStep("upload");
+      setExtracted(null);
+      setResult(null);
+      setApplication(EMPTY_APPLICATION);
+      setImageUrl("");
+      setElapsedMs(null);
+      setError(null);
+    });
   }
 
   // Step 2 can be taller than the viewport — jump back to the top on each
@@ -134,7 +166,7 @@ export default function App() {
               </div>
               {i < STEPS.length - 1 && (
                 <span
-                  className={`h-px w-8 transition-colors duration-500 sm:w-16 ${i < currentIndex ? "bg-green-600" : "bg-gray-300"}`}
+                  className={`h-px w-8 transition-colors duration-700 sm:w-16 ${i < currentIndex ? "bg-green-600" : "bg-gray-300"}`}
                   aria-hidden
                 />
               )}
@@ -159,7 +191,12 @@ export default function App() {
             />
           )}
           {step === "results" && result && (
-            <ResultsStep result={result} imageUrl={imageUrl} onRestart={handleRestart} onEdit={() => setStep("review")} />
+            <ResultsStep
+              result={result}
+              imageUrl={imageUrl}
+              onRestart={handleRestart}
+              onEdit={() => scrollToTopThen(() => setStep("review"))}
+            />
           )}
         </div>
       </main>
