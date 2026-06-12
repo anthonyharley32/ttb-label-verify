@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadStep from "./components/UploadStep";
 import ReviewStep from "./components/ReviewStep";
 import ResultsStep from "./components/ResultsStep";
@@ -75,6 +75,14 @@ export default function App() {
     setError(null);
   }
 
+  // Step 2 can be taller than the viewport — jump back to the top on each
+  // transition so the new step starts in view. Instant (not smooth): the view
+  // is fully replaced, so there's no old content to scroll "through", and the
+  // fade-up animation on the incoming step provides the continuity.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const currentIndex = STEPS.findIndex((s) => s.key === step);
 
   return (
@@ -94,9 +102,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Step indicator */}
-      <nav aria-label="Progress" className="mx-auto max-w-6xl px-6 pt-8">
-        <ol className="flex items-center justify-center gap-2 sm:gap-4">
+      {/* Step indicator — sticky so progress (and its animations) stays visible on tall steps */}
+      <nav aria-label="Progress" className="sticky top-0 z-20 bg-[#f8fafc]/85 px-6 py-4 backdrop-blur">
+        <ol className="mx-auto flex max-w-6xl items-center justify-center gap-2 sm:gap-4">
           {STEPS.map((s, i) => (
             <li key={s.key} className="flex items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
