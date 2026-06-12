@@ -36,7 +36,7 @@ npm run build                # typecheck + production build
 |---|---|---|
 | Frontend | React 19 + Vite + TypeScript | Fast, simple SPA — no framework overhead for a 3-step tool |
 | Styling | Tailwind CSS v4 | Quick to build a clean, high-contrast, large-target UI |
-| AI extraction | Claude vision (`claude-haiku-4-5`) via one serverless function | See "Why vision AI" and "Why Haiku" below |
+| AI extraction | Claude vision (`claude-sonnet-4-6`) via one serverless function | See "Why vision AI" and "Model choice" below |
 | Comparison engine | Pure TypeScript (`src/lib/compare.ts`), unit-tested | Deterministic, explainable results — no AI in the verification step |
 | Hosting | Vercel (static SPA + `api/extract-label` function) | One-command deploys; the API key lives server-side only |
 
@@ -46,9 +46,16 @@ The only server-side code is [`api/extract-label.ts`](api/extract-label.ts) → 
 
 The previous scanning-vendor pilot failed on two fronts: 30–40 second processing and brittleness against real-world image quality. A multimodal model handles both — it reads angled/glary photos natively, understands *context* (it can tell a brand name from a class designation without rigid templates), and returns structured JSON in a single ~2–3s call.
 
-### Why Haiku (model choice)
+### Model choice — a measured tradeoff
 
-Stakeholders were explicit that anything slower than ~5 seconds will not be adopted. `claude-haiku-4-5` is the fastest Claude model and completes a label extraction in ~2–3 seconds with high accuracy on this task. The model is configurable via `EXTRACTION_MODEL` if accuracy needs ever outweigh latency.
+Stakeholders were explicit that anything slower than ~5 seconds risks adoption (the previous vendor's 30–40s pilot failed for exactly this). I benchmarked both directions on real bottle photos:
+
+| Model | Latency (measured) | Small-print fidelity |
+|---|---|---|
+| `claude-haiku-4-5` | ~3.5–4.5s ✅ | Garbled a tiny producer address ("NORWALK, CT" → "Norval, ON") |
+| `claude-sonnet-4-6` (default) | ~6.5s | Near-perfect verbatim transcription |
+
+For a compliance tool, a confidently wrong transcription is worse than a ~1.5s overage, so the default favors fidelity; `EXTRACTION_MODEL` switches it in one env var. A production version could close the gap with newer fast-vision models, regional endpoints, or a fast-pass/verify-pass pipeline — the endpoint is a single isolated module precisely so the model is swappable.
 
 ### Deliberate design decisions
 

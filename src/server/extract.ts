@@ -2,10 +2,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { ExtractedLabelSchema } from "../lib/extraction-schema.js";
 
-// Haiku 4.5 is the fastest Claude model — a single vision extraction returns in
-// ~2-3 seconds, which keeps us inside TTB's hard < 5 second usability requirement
-// (the previous OCR vendor's 30-40s response time killed adoption).
-const DEFAULT_MODEL = "claude-haiku-4-5";
+// Measured on real bottle photos: claude-haiku-4-5 extracts in ~3.5-4.5s but can
+// garble very small print; claude-sonnet-4-6 is ~6.5s with near-perfect
+// transcription. Compliance work favors fidelity — wrong text is worse than a
+// slightly longer wait — so Sonnet is the default. Override via EXTRACTION_MODEL.
+const DEFAULT_MODEL = "claude-sonnet-4-6";
 
 const SYSTEM_PROMPT = `You are assisting TTB (Alcohol and Tobacco Tax and Trade Bureau) compliance agents by extracting required label elements from photographs of alcohol beverage labels.
 
