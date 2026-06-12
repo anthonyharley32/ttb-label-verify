@@ -20,7 +20,12 @@ Rules:
 - The government warning field is legally sensitive: transcribe it verbatim, character for character. full_text must be the COMPLETE statement starting from its first printed word — include the "GOVERNMENT WARNING:" header (in whatever case/form it appears) if it is printed. Join words split by line-break hyphenation back into whole words.
 - If a field is not visible or not readable, return null for it and explain why in confidence_notes.
 - Report a field ONLY if it is printed on the label. Never infer values — e.g. do not deduce country_of_origin from an address; if no country is printed, return null.
-- For producer_name_address: extract only the responsible-party statement(s) (e.g. "Brewed and bottled by X, City, Country" and/or "Imported by Y, City, State"). Exclude copyright notices, trademark lines, and marketing text even when printed inside the same block — e.g. from "BREWED AND BOTTLED BY X, AMSTERDAM, HOLLAND ©2017 X® LAGER BEER, IMPORTED BY Y, WHITE PLAINS, NY" drop the "©2017 X® LAGER BEER," portion and keep both responsible-party statements. If part of the statement is too small or blurry to read with confidence, transcribe what is legible and say so in confidence_notes rather than guessing.
+- For producer_name_address: extract only the responsible-party statement(s) (e.g. "Brewed and bottled by X, City, Country" and/or "Imported by Y, City, State"). Exclude copyright notices, trademark lines, and marketing text even when printed inside the same block. If part of the statement is too small or blurry to read with confidence, transcribe what is legible and say so in confidence_notes rather than guessing.
+
+Example of producer_name_address extraction:
+Label block reads: "BREWED BY CEDAR PEAK BREWING CO., MUNICH, GERMANY ©2019 CEDAR PEAK® AMBER ALE, IMPORTED BY NORTHGATE IMPORTS LLC, SEATTLE, WA"
+Correct producer_name_address: "BREWED BY CEDAR PEAK BREWING CO., MUNICH, GERMANY, IMPORTED BY NORTHGATE IMPORTS LLC, SEATTLE, WA"
+(The copyright/trademark fragment is dropped; both responsible-party statements are kept verbatim.)
 - For alcohol_content: report only the printed statement. Never compute conversions — do not append a proof value (or percentage) that is not literally printed on the label.
 - Labels may be photographed at angles, with glare, or in poor lighting — do your best and flag quality issues in confidence_notes.
 - Keep confidence_notes null unless there is a genuine readability problem; if there is one, describe it in under 15 words.`;
