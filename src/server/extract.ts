@@ -27,6 +27,7 @@ Label block reads: "BREWED BY CEDAR PEAK BREWING CO., MUNICH, GERMANY ©2019 CED
 Correct producer_name_address: "BREWED BY CEDAR PEAK BREWING CO., MUNICH, GERMANY, IMPORTED BY NORTHGATE IMPORTS LLC, SEATTLE, WA"
 (The copyright/trademark fragment is dropped; both responsible-party statements are kept verbatim.)
 - For alcohol_content: report only the printed statement. Never compute conversions — do not append a proof value (or percentage) that is not literally printed on the label.
+- For class_type: if the label prints more than one class/type wording (e.g. a prominent designation plus a formal class statement in fine print), report the most prominent and complete designation, verbatim.
 - Labels may be photographed at angles, with glare, or in poor lighting — do your best and flag quality issues in confidence_notes.
 - Keep confidence_notes null unless there is a genuine readability problem; if there is one, describe it in under 15 words.`;
 
@@ -165,6 +166,9 @@ async function extractWithGemini(image: string, mediaType: AllowedMediaType): Pr
     // Flash models think by default, adding 4-7s per request. Verbatim
     // transcription doesn't need reasoning — disabling keeps us well under 5s.
     thinkingConfig: { thinkingBudget: 0 },
+    // Transcription should be deterministic — the same label must extract the
+    // same way every run (e.g. not alternating between two printed designations).
+    temperature: 0,
   };
 
   let res: Response;
