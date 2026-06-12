@@ -37,10 +37,23 @@ export default function UploadStep({ onFile, busy, error }: Props) {
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-4 border-dashed px-8 py-20 text-center transition-colors ${
-          dragging ? "border-blue-600 bg-blue-50" : "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/50"
+        className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl px-8 py-20 text-center transition-colors ${
+          dragging ? "bg-blue-50" : "bg-white hover:bg-blue-50/50"
         } ${busy ? "pointer-events-none opacity-60" : ""}`}
       >
+        {/* SVG outline instead of border-dashed so dash length is controllable */}
+        <svg aria-hidden className={`pointer-events-none absolute inset-0 h-full w-full transition-colors ${dragging ? "text-blue-600" : "text-gray-300 group-hover:text-blue-400"}`}>
+          <rect
+            x="1"
+            y="1"
+            rx="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeDasharray="16 12"
+            style={{ width: "calc(100% - 2px)", height: "calc(100% - 2px)" }}
+          />
+        </svg>
         {busy ? (
           <>
             <div className="mb-6 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
