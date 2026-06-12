@@ -1,0 +1,97 @@
+
+import { useCallback, useRef, useState } from "react";
+
+interface Props {
+  onFile: (file: File) => void;
+  onDemo: () => void;
+  busy: boolean;
+  error: string | null;
+}
+
+export default function UploadStep({ onFile, onDemo, busy, error }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) onFile(file);
+    },
+    [onFile],
+  );
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload a label photo"
+        onClick={() => !busy && inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !busy) inputRef.current?.click();
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-4 border-dashed px-8 py-20 text-center transition-colors ${
+          dragging ? "border-blue-600 bg-blue-50" : "border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/50"
+        } ${busy ? "pointer-events-none opacity-60" : ""}`}
+      >
+        {busy ? (
+          <>
+            <div className="mb-6 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+            <p className="text-2xl font-semibold text-gray-800">Reading the label…</p>
+            <p className="mt-2 text-lg text-gray-500">This usually takes a few seconds</p>
+          </>
+        ) : (
+          <>
+            <svg className="mb-6 h-16 w-16 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <p className="text-2xl font-semibold text-gray-800">Upload Label Photo</p>
+            <p className="mt-3 text-lg text-gray-500">Click here or drag a photo of the bottle label into this box</p>
+            <p className="mt-2 text-sm text-gray-400">JPG, PNG, or WebP — photos at an angle or with glare are OK</p>
+          </>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onFile(file);
+            e.target.value = "";
+          }}
+        />
+      </div>
+
+      {error && (
+        <div className="mt-6 rounded-lg border border-red-300 bg-red-50 p-4 text-lg text-red-800" role="alert">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-8 text-center">
+        <button
+          onClick={onDemo}
+          disabled={busy}
+          className="text-lg text-blue-700 underline underline-offset-4 hover:text-blue-900 disabled:opacity-50"
+        >
+          No photo handy? Try it with a sample label
+        </button>
+        <p className="mt-3 text-sm text-gray-400">
+          Sample test labels are also available to download:{" "}
+          <a href="/samples/bourbon-clean.png" className="underline" download>clean label</a>,{" "}
+          <a href="/samples/bourbon-warning-violation.png" className="underline" download>warning violation</a>,{" "}
+          <a href="/samples/wine-label.png" className="underline" download>wine label</a>
+        </p>
+      </div>
+    </div>
+  );
+}
